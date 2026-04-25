@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Smart Hostel · Complaint Desk</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="wrap">
+
+    <header class="topbar">
+        <div class="brand"><span class="dot"></span>Smart Hostel</div>
+        <nav class="nav">
+            <a href="index.html" class="active">Home</a>
+            <a href="student.html">Student</a>
+            <a href="admin.html">Admin</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div>
+            <div class="eyebrow">Est. Complaint Desk — Block A</div>
+            <h1>A quiet place <em>to put</em> what's not working.</h1>
+        </div>
+        <div>
+            <p class="lead">
+                Register your room, file a complaint, and track it through
+                to resolution. Admin staff assign and close issues from the
+                same desk — no paper, no chasing.
+            </p>
+        </div>
+    </section>
+
+    <section class="grid-2">
+
+        <div class="card">
+            <div class="num">01</div>
+            <h2>Student</h2>
+            <p>Register once with your room and phone. Log in with your ID
+               to file a new complaint — water, power, furniture, whatever.</p>
+            <div class="btn-row">
+                <a class="btn" href="student.html">Enter Student Desk →</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="num">02</div>
+            <h2>Admin</h2>
+            <p>Review every complaint. Assign staff, mark resolutions,
+               and pull a status report of the whole hostel.</p>
+            <div class="btn-row">
+                <a class="btn sienna" href="admin.html">Enter Admin Desk →</a>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <h2>How it works</h2>
+            <span class="tag">Three steps</span>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="card">
+                <h3>1. Register</h3>
+                <p>Name, room, email, phone, password — you get a student ID.</p>
+            </div>
+            <div class="card">
+                <h3>2. File</h3>
+                <p>Log in, describe the issue. It's saved with status "Pending".</p>
+            </div>
+            <div class="card">
+                <h3>3. Resolve</h3>
+                <p>Admin assigns it to staff, then marks it "Resolved".</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div>© Smart Hostel · Spring Boot · SQLite · JPA</div>
+        <div>AutoSave runs every 20 s → complaints.txt</div>
+    </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Smart Hostel · Admin</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="wrap">
+
+    <header class="topbar">
+        <div class="brand"><span class="dot"></span>Smart Hostel</div>
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="student.html">Student</a>
+            <a href="admin.html" class="active">Admin</a>
+        </nav>
+    </header>
+
+    <section class="hero" style="grid-template-columns: 1fr;">
+        <div>
+            <div class="eyebrow">Admin Desk</div>
+            <h1>View. <em>Assign.</em> Resolve.</h1>
+        </div>
+    </section>
+
+    <!-- ============ LOGIN ============ -->
+    <section id="loginSection" class="section" style="margin-top: 0;">
+        <div class="grid-2">
+            <div>
+                <h2>Admin login</h2>
+                <p class="lead">Default credentials from the original system are
+                   <code>admin</code> / <code>123</code>.</p>
+            </div>
+            <div class="card">
+                <form class="form" id="adminLoginForm">
+                    <div class="field">
+                        <label>Username</label>
+                        <input name="username" required/>
+                    </div>
+                    <div class="field">
+                        <label>Password</label>
+                        <input name="password" type="password" required/>
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" class="btn sienna">Login</button>
+                    </div>
+                </form>
+                <div id="adminLoginMsg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ ADMIN MENU (hidden until login) ============ -->
+    <section id="menuSection" class="section" style="display: none;">
+
+        <div class="section-head">
+            <h2>Admin menu</h2>
+            <span class="tag">5 actions</span>
+        </div>
+
+        <div class="tabs">
+            <button data-tab="viewAll" class="active">1 · View All</button>
+            <button data-tab="assign">2 · Assign</button>
+            <button data-tab="resolve">3 · Resolve</button>
+            <button data-tab="report">4 · Report</button>
+            <button data-tab="logout">5 · Logout</button>
+        </div>
+
+        <!-- VIEW ALL -->
+        <div id="viewAll" class="panel active">
+            <div class="btn-row" style="margin-bottom: 14px;">
+                <button class="btn" id="refreshBtn">Refresh</button>
+                <button class="btn ghost" id="sortBtn">Sort by Student ID</button>
+            </div>
+            <div id="complaintsTable"></div>
+        </div>
+
+        <!-- ASSIGN -->
+        <div id="assign" class="panel">
+            <div class="grid-2">
+                <div>
+                    <h3>Assign complaint</h3>
+                    <p class="lead">Set the staff in charge. Status becomes
+                       <strong>In Progress</strong>.</p>
+                </div>
+                <div class="card">
+                    <form class="form" id="assignForm">
+                        <div class="field">
+                            <label>Complaint ID</label>
+                            <input name="complaintId" type="number" required/>
+                        </div>
+                        <div class="field">
+                            <label>Staff Name</label>
+                            <input name="staff" required/>
+                        </div>
+                        <div class="btn-row">
+                            <button type="submit" class="btn sienna">Assign</button>
+                        </div>
+                    </form>
+                    <div id="assignMsg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESOLVE -->
+        <div id="resolve" class="panel">
+            <div class="grid-2">
+                <div>
+                    <h3>Resolve complaint</h3>
+                    <p class="lead">Mark the complaint as
+                       <strong>Resolved</strong> and record how.</p>
+                </div>
+                <div class="card">
+                    <form class="form" id="resolveForm">
+                        <div class="field">
+                            <label>Complaint ID</label>
+                            <input name="complaintId" type="number" required/>
+                        </div>
+                        <div class="field">
+                            <label>Resolution Details</label>
+                            <textarea name="resolution" required></textarea>
+                        </div>
+                        <div class="btn-row">
+                            <button type="submit" class="btn sienna">Resolve</button>
+                        </div>
+                    </form>
+                    <div id="resolveMsg"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT -->
+        <div id="report" class="panel">
+            <div class="btn-row" style="margin-bottom: 14px;">
+                <button class="btn" id="genReportBtn">Generate Report</button>
+            </div>
+            <div id="reportBox"></div>
+        </div>
+
+        <!-- LOGOUT -->
+        <div id="logout" class="panel">
+            <div class="card">
+                <h3>Logout</h3>
+                <p>Leaves the admin session. You'll be back on the login screen.</p>
+                <div class="btn-row" style="margin-top: 14px;">
+                    <button class="btn" id="logoutBtn">Confirm logout</button>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <footer>
+        <div>© Smart Hostel</div>
+        <div>REST: /api/admin, /api/complaints</div>
+    </footer>
+
+</div>
+
+<script>
+/* ---------- tab switching ---------- */
+function bindTabs(){
+    document.querySelectorAll('.tabs button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+            if (btn.dataset.tab === 'viewAll') loadComplaints(false);
+        });
+    });
+}
+bindTabs();
+
+/* ---------- helpers ---------- */
+function toast(el, msg, isError){
+    el.innerHTML = '<div class="toast ' + (isError ? 'error' : '') + '">' + msg + '</div>';
+}
+
+function statusClass(s){
+    if (!s) return '';
+    const safe = s.replace(' ', '');
+    return 'status-badge status-' + safe.split(' ')[0];
+}
+
+function renderTable(list){
+    if (!list || list.length === 0) {
+        return '<div class="toast">No complaints yet.</div>';
+    }
+    let html = '<table class="data-table"><thead><tr>' +
+               '<th>ID</th><th>Student</th><th>Type</th><th>Description</th>' +
+               '<th>Status</th><th>Staff</th><th>Resolution</th><th>Date</th>' +
+               '</tr></thead><tbody>';
+    list.forEach(c => {
+        html += '<tr>' +
+                '<td>' + c.complaintId + '</td>' +
+                '<td>' + c.studentId + '</td>' +
+                '<td>' + (c.type || '') + '</td>' +
+                '<td>' + (c.description || '') + '</td>' +
+                '<td><span class="' + statusClass(c.status) + '">' + c.status + '</span></td>' +
+                '<td>' + (c.assignedStaff || '—') + '</td>' +
+                '<td>' + (c.resolution || '—') + '</td>' +
+                '<td>' + (c.date || '') + '</td>' +
+                '</tr>';
+    });
+    html += '</tbody></table>';
+    return html;
+}
+
+/* ---------- admin login ---------- */
+document.getElementById('adminLoginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target;
+    const body = {
+        username: f.username.value,
+        password: f.password.value
+    };
+    try {
+        const r = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await r.json();
+        if (r.ok && data.success) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('menuSection').style.display = 'block';
+            loadComplaints(false);
+        } else {
+            toast(document.getElementById('adminLoginMsg'),
+                  data.message || 'Invalid Admin credentials.', true);
+        }
+    } catch(err) {
+        toast(document.getElementById('adminLoginMsg'),
+              'Network error: ' + err, true);
+    }
+});
+
+/* ---------- view all / sort ---------- */
+async function loadComplaints(sorted){
+    try {
+        const url = sorted ? '/api/complaints/sorted' : '/api/complaints';
+        const r = await fetch(url);
+        const data = await r.json();
+        document.getElementById('complaintsTable').innerHTML = renderTable(data);
+    } catch(err) {
+        document.getElementById('complaintsTable').innerHTML =
+            '<div class="toast error">Network error: ' + err + '</div>';
+    }
+}
+
+document.getElementById('refreshBtn').addEventListener('click', () => loadComplaints(false));
+document.getElementById('sortBtn').addEventListener('click',    () => loadComplaints(true));
+
+/* ---------- assign ---------- */
+document.getElementById('assignForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target;
+    const body = {
+        complaintId: parseInt(f.complaintId.value),
+        staff:       f.staff.value
+    };
+    try {
+        const r = await fetch('/api/admin/assign', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await r.json();
+        toast(document.getElementById('assignMsg'),
+              data.message,
+              !(r.ok && data.success));
+        if (r.ok && data.success) f.reset();
+    } catch(err) {
+        toast(document.getElementById('assignMsg'),
+              'Network error: ' + err, true);
+    }
+});
+
+/* ---------- resolve ---------- */
+document.getElementById('resolveForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target;
+    const body = {
+        complaintId: parseInt(f.complaintId.value),
+        resolution:  f.resolution.value
+    };
+    try {
+        const r = await fetch('/api/admin/resolve', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await r.json();
+        toast(document.getElementById('resolveMsg'),
+              data.message,
+              !(r.ok && data.success));
+        if (r.ok && data.success) f.reset();
+    } catch(err) {
+        toast(document.getElementById('resolveMsg'),
+              'Network error: ' + err, true);
+    }
+});
+
+/* ---------- report ---------- */
+document.getElementById('genReportBtn').addEventListener('click', async () => {
+    try {
+        const r = await fetch('/api/admin/report');
+        const data = await r.json();
+        document.getElementById('reportBox').innerHTML =
+            '<div class="report-box">' + (data.report || '') + '</div>';
+    } catch(err) {
+        document.getElementById('reportBox').innerHTML =
+            '<div class="toast error">Network error: ' + err + '</div>';
+    }
+});
+
+/* ---------- logout ---------- */
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    document.getElementById('menuSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('adminLoginForm').reset();
+    toast(document.getElementById('adminLoginMsg'), 'Admin logged out.');
+});
+</script>
+
+</body>
+</html>

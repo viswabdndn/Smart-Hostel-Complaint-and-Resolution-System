@@ -1,0 +1,2 @@
+1,2,Water Leakage,Due to overflow of water caused a gap in pipe,Resolved
+2,1,electricity,because of the wire sort circuit,Resolved
